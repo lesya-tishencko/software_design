@@ -2,93 +2,77 @@ package ru.spbau.mit.sd;
 
 import org.junit.Assert;
 import org.junit.Test;
+import ru.spbau.mit.sd.command.Cat;
+import ru.spbau.mit.sd.command.Echo;
+import ru.spbau.mit.sd.command.Pwd;
+import ru.spbau.mit.sd.command.Wc;
+
 import java.io.*;
 import java.util.Arrays;
 import java.util.Vector;
 
 public class CliTest {
 
-    private void print(IOStream ios) {
-        final int bufSize = 1024;
-        byte[] buf = new byte[bufSize];
-        try {
-            int size = ios.read(buf);
-            while (size != -1) {
-                System.out.write(buf, 0, size);
-                if (size < bufSize) {
-                    break;
-                }
-                size = ios.read(buf);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Test
     public void testPreprocessor() {
+        Environment env = new Environment();
         Preprocessor preprocessor = new Preprocessor();
-        String var = "a=5 b=4 c=10 d=5 e=2 x=it";
+        String var = "a=5 b=4 c=10 x=it";
+        env.put("a", "4");
+        env.put("b", "5");
+        env.put("c", "10");
+        env.put("x", "it");
         String line = "echo \"$b abc $b\" $a $b ex$x";
-        Assert.assertEquals(preprocessor.preprocess(var), "");
-        Assert.assertEquals(preprocessor.preprocess(line), "echo \"4 abc 4\" 5 4 exit");
+        String line_not_change = "echo \'$b $x\'";
+        Assert.assertEquals(var, preprocessor.preprocess(env, var));
+        Assert.assertEquals("echo \"5 abc 5\" 4 5 exit", preprocessor.preprocess(env, line));
+        Assert.assertEquals(line_not_change, preprocessor.preprocess(env, line_not_change));
         line = "echo $e | cat $d | echo $f";
-        Assert.assertEquals(preprocessor.preprocess(line), "echo 2 | cat 5 | echo");
+        env.put("e", "2");
+        env.put("d", "5");
+        Assert.assertEquals( "echo 2 | cat 5 | echo", preprocessor.preprocess(env, line));
 
     }
 
     @Test
     public void testParser() {
+        Environment env = new Environment();
         Parser parser = new Parser();
         String line = "echo 123 543 | wc | cat test";
         parser.parse(line);
-        Assert.assertEquals(parser.getCommands().elementAt(0), "echo");
-        Assert.assertEquals(parser.getCommands().elementAt(1), "wc");
-        Assert.assertEquals(parser.getCommands().elementAt(2), "cat");
-        Assert.assertEquals(parser.getParams(), new Vector<>(Arrays.asList(new String[]{"123 543", "", "test"})));
+        Assert.assertEquals("echo", parser.getCommands().elementAt(0));
+        Assert.assertEquals("wc", parser.getCommands().elementAt(1));
+        Assert.assertEquals("cat", parser.getCommands().elementAt(2));
+        Assert.assertEquals(new Vector<>(Arrays.asList(new String[]{"123 543", "", "test"})), parser.getParams());
     }
 
     @Test
     public void testWc() {
+        Environment env = new Environment();
         Wc wc = new Wc();
-        IOStream ios = new IOStream();
-        wc.execute(ios, "test/test1 test/test2 test/test3");
-        print(ios);
+        wc.execute(env, System.in, System.out, "src/test/resources/test1 src/test/resources/test2");
     }
 
     @Test
     public void testEcho() {
         Echo echo = new Echo();
-        IOStream ios = new IOStream();
-        print(ios);
+        echo.execute(new Environment(), System.in, System.out, "it works");
     }
 
     @Test
-    public void testIOStream() {
-        IOStream ios = new IOStream();
-        final int bufSize = 1024;
-        byte[] buf = new byte[bufSize];
-        try {
-            ios.write("hello world!".getBytes());
-            Assert.assertEquals(ios.read(buf), "hello world!".length());
-            ios.write(("first line" + System.lineSeparator() + "second line").getBytes());
-            ios.readFile(new File("test/test.pdf"), buf);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    @Test
     public void testCat() {
+        Environment env = new Environment();
         Cat cat = new Cat();
-        IOStream ios = new IOStream();
-        cat.execute(ios, "test/test1 test/test2");
-        print(ios);
+        cat.execute(env, System.in, System.out, "src/test/resources/test1");
     }
 
     @Test
     public void testPwd() {
+        Environment env = new Environment();
+        String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+        env.put("PWD", absolutePath);
         Pwd pwd = new Pwd();
-        pwd.execute(new IOStream(), "");
+        pwd.execute(env, System.in, System.out, "");
     }
 
 }

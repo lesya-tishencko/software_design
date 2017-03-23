@@ -1,9 +1,14 @@
 package ru.spbau.mit.sd;
 
+import ru.spbau.mit.sd.command.CommandException;
+
 import java.io.*;
 import java.util.Scanner;
 import java.util.Vector;
 
+/**
+ * main class to run shell
+ */
 public class Shell {
     /**
      * run command line interpreter
@@ -19,30 +24,55 @@ public class Shell {
         Scanner scanner = new Scanner(System.in);
         Preprocessor preprocessor = new Preprocessor();
         Parser parser = new Parser();
-        while (true) {
+        Environment env = new Environment();
+        String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+        env.put("PWD", absolutePath);
+        boolean END = false;
+
+        while (!END) {
             System.out.println("input new command:");
-            String line = scanner.nextLine();
-            line = preprocessor.preprocess(line);
-            parser.parse(line);
-            Vector<String> commands = parser.getCommands();
-            Vector<String> params = parser.getParams();
-            IOStream ios = new IOStream();
-            Factory command;
-            for (int i = 0; i < commands.size(); ++i) {
-                command = Factory.getCommand(commands.elementAt(i));
-                command.execute(ios, params.elementAt(i));
-            }
-            try {
-                int size = ios.read(buf);
-                while (size != -1) {
-                    System.out.write(buf, 0, size);
-                    if (size < BUF_SIZE) {
+            if (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                line = preprocessor.preprocess(env, line);
+                parser.parse(line);
+                Vector<String> commands = parser.getCommands();
+                Vector<String> params = parser.getParams();
+                int[] pipePos = parser.getPipePos();
+                PipedInputStream pis = new PipedInputStream(4096);
+                PipedOutputStream pos = new PipedOutputStream();
+                try {
+                    pos.connect(pis);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Runnable command;
+                int j = 0;
+                InputStream inputStream = System.in;
+                OutputStream outputStream = System.out;
+                for (int i = 0; i < commands.size(); ++i) {
+                    command = Runnable.getCommand(commands.elementAt(i));
+                    if (i >= pipePos[j]) {
+                        ++j;
+                        pipePos[j] += pipePos[j - 1];
+                        inputStream = pis;
+                    }
+                    if (i == pipePos[j] - 1) {
+                        if (j == pipePos.length - 1) {
+                            outputStream = System.out;
+                        } else {
+                            outputStream = pos;
+                        }
+                    }
+                    try {
+                        command.execute(env, inputStream, outputStream, params.elementAt(i));
+                    } catch (CommandException e) {
                         break;
                     }
-                    size = ios.read(buf);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+
+            } else {
+                System.out.println("good bye!");
+                END = true;
             }
         }
     }
