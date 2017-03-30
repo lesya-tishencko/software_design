@@ -8,7 +8,7 @@
 
 **Runnable** - interface for all commands.
  - Has static method which get name of command and return object of class which implements Runnable (all commands implement this interface).
- - if command not found then create object of default class **NewCommand** his method execute run System process.
+ - if command not found then create object of default class **NewCommand**, his method execute run System process.
  - Classes which implement Runnable:
     - **Echo** override execute which method work as echo in command-line *nix system.
     - **Cat**  override execute method which work as cat in command-line *nix system.
