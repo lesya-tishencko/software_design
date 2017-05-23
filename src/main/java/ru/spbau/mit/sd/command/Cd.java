@@ -42,6 +42,7 @@ public class Cd implements Runnable {
                 currentDirectory = targetPath;
                 path = path.substring(1);
             }
+            // windows doesn't show files in C:, that's why I use this hack
             if (path.startsWith("C:")) {
                 targetPath = path;
             }
