@@ -2,12 +2,9 @@ package ru.spbau.mit.sd;
 
 import org.junit.Assert;
 import org.junit.Test;
-import ru.spbau.mit.sd.command.Cat;
-import ru.spbau.mit.sd.command.Echo;
-import ru.spbau.mit.sd.command.Pwd;
-import ru.spbau.mit.sd.command.Wc;
+import ru.spbau.mit.sd.command.*;
 
-import java.io.*;
+import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -69,10 +66,36 @@ public class CliTest {
     @Test
     public void testPwd() {
         Environment env = new Environment();
-        String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-        env.put("PWD", absolutePath);
+        // String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+        env.put("PWD", System.getProperty("user.dir"));
         Pwd pwd = new Pwd();
         pwd.execute(env, System.in, System.out, "");
     }
 
+    @Test
+    public void testLs() {
+        Environment env = new Environment();
+        env.put("PWD", System.getProperty("user.dir"));
+        Ls ls = new Ls();
+        ls.execute(env, System.in, System.out, "\\");
+        ls.execute(env, System.in, System.out, "..");
+        ls.execute(env, System.in, System.out, "src/main/java/ru/spbau/mit/sd/command");
+    }
+
+    @Test
+    public void testCd() {
+        Environment env = new Environment();
+        env.put("PWD", System.getProperty("user.dir"));
+        Cd cd = new Cd();
+        String path = env.get("PWD");
+        cd.execute(env, System.in, System.out, "\\");
+        assertEquals(System.getProperty("user.home"), env.get("PWD"));
+        cd.execute(env, System.in, System.out, path);
+        assertEquals(path, env.get("PWD"));
+
+        cd.execute(env, System.in, System.out, "src/main/java/ru/spbau/mit/sd/command");
+        cd.execute(env, System.in, System.out, "../../../../../../../test");
+        assertEquals(path + "\\src\\test", env.get("PWD"));
+        cd.execute(env, System.in, System.out, path);
+    }
 }

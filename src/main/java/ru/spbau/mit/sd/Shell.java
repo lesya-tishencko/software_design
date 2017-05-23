@@ -25,8 +25,7 @@ public class Shell {
         Preprocessor preprocessor = new Preprocessor();
         Parser parser = new Parser();
         Environment env = new Environment();
-        String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-        env.put("PWD", absolutePath);
+        env.put("PWD", System.getProperty("user.dir"));
         boolean END = false;
 
         while (!END) {

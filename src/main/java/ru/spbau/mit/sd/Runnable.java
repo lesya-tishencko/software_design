@@ -14,7 +14,7 @@ import java.util.HashSet;
  */
 public interface Runnable {
      HashSet<String> COMMANDS =
-            new HashSet<>(Arrays.asList("echo", "cat", "wc", "pwd", "exit", "assignment"));
+            new HashSet<>(Arrays.asList("echo", "cat", "wc", "pwd", "exit", "assignment", "cd", "ls"));
 
     /**
      * static method to create object of required command

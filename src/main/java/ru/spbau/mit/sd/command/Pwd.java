@@ -24,7 +24,7 @@ public class Pwd implements Runnable {
     public void execute(Environment env, InputStream inputStream,
                         OutputStream outputStream, String param) {
         try {
-            outputStream.write(env.get("PWD").getBytes());
+            outputStream.write((env.get("PWD") + System.lineSeparator()).getBytes());
         } catch (IOException e) {
             throw new CommandException("pwd: cannot write to outputstream");
         }
