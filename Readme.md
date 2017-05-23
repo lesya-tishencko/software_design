@@ -1,9 +1,18 @@
-# How to run command line interpreter?
+# HW01 - Command Line Interpreter
 
-Get the last version of CLI (see branches).
+**Shell** - main class. Has method main() to run CLI.
 
-1. Build project. For that you must run **./gradle build**.
+**Preprocess** - class to process line, which entered by user.
 
-2. if you want run tests you must use command **./gradle test**.
+**Parser** - class to parse commands and their args from string. Take entered line and parse line. Save command and their args in fields commands and params. These fields has getter methods.
 
-3. if you want run CLI use command **./gradle run**
+**Runnable** - interface for all commands.
+ - Has static method which get name of command and return object of class which implements Runnable (all commands implement this interface).
+ - if command not found then create object of default class **NewCommand**, his method execute run System process.
+ - Classes which implement Runnable:
+    - **Echo** override execute which method work as echo in command-line *nix system.
+    - **Cat**  override execute method which work as cat in command-line *nix system.
+    - **Exit** Call execute to exit.
+    - **Wc**  override execute method which work as wc in command-line *nix system.
+    - **Pwd** override execute method which work as pwd in command-line *nix system.
+    - **Assignment** override execute method to assign variable with its value.
