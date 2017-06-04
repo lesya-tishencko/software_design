@@ -66,7 +66,6 @@ public class CliTest {
     @Test
     public void testPwd() {
         Environment env = new Environment();
-        // String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
         env.put("PWD", System.getProperty("user.dir"));
         Pwd pwd = new Pwd();
         pwd.execute(env, System.in, System.out, "");
@@ -80,6 +79,8 @@ public class CliTest {
         ls.execute(env, System.in, System.out, "\\");
         ls.execute(env, System.in, System.out, "..");
         ls.execute(env, System.in, System.out, "src/main/java/ru/spbau/mit/sd/command");
+
+        ls.execute(env, System.in, System.out, "src/main/command");
     }
 
     @Test

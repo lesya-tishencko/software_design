@@ -81,10 +81,12 @@ public class Ls implements Runnable {
                 if (!file.exists()) {
                     outputStream.write(("ls: " + targetPath + ": No such file or directory"
                             + System.lineSeparator()).getBytes());
+                    return;
                 }
                 if (!file.isDirectory()) {
                     outputStream.write(("ls: " + targetPath + ": Isn't a directory"
                             + System.lineSeparator()).getBytes());
+                    return;
                 }
                 File[] folderEntries = file.listFiles();
                 for (File entry : folderEntries) {
